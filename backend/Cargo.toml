@@ -1,0 +1,19 @@
+[package]
+name = "harmony-backend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-graphql = "5.0.7"
+async-graphql-axum = "5.0.7"
+axum = "0.6.18"
+chrono = "0.4.24"
+dotenv_codegen = "0.15.0"
+parking_lot = "0.12.1"
+pwhash = "1.0.0"
+rustflake = "0.1.1"
+serde_json = "1.0.96"
+tokio = { version = "1.28.0", features = ["full"] }
+tokio-postgres = "0.7.8"
