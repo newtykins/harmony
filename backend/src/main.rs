@@ -13,7 +13,7 @@ use axum::{
 use tokio_postgres::NoTls;
 
 mod models;
-use models::{MutationRoot, QueryRoot, Schema};
+use models::{Mutation, Query, Schema};
 
 async fn graphql_handler(schema: Extension<Schema>, req: GraphQLRequest) -> GraphQLResponse {
     schema.execute(req.into_inner()).await.into()
@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     });
 
     // make the schema
-    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
+    let schema = Schema::build(Query::default(), Mutation::default(), EmptySubscription)
         .data(client)
         .finish();
 

@@ -686,6 +686,7 @@ dependencies = [
  "chrono",
  "dotenv_codegen",
  "jsonwebtoken",
+ "once_cell",
  "pwhash",
  "rustflake",
  "serde",
