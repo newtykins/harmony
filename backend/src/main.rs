@@ -26,12 +26,9 @@ async fn graphiql() -> impl IntoResponse {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // connect to the database
-    let (client, connection) = tokio_postgres::connect(
-        dotenv!("DB_URL"),
-        NoTls,
-    )
-    .await
-    .unwrap();
+    let (client, connection) = tokio_postgres::connect(dotenv!("DB_URL"), NoTls)
+        .await
+        .unwrap();
 
     tokio::spawn(async move {
         if let Err(e) = connection.await {
