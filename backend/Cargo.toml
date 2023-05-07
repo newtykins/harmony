@@ -3,18 +3,17 @@ name = "harmony"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-async-graphql = "5.0.7"
-async-graphql-axum = "5.0.7"
-axum = "0.6.18"
+actix-web = "4.3.1"
+bb8 = "0.8.0"
+bb8-postgres = "0.8.1"
 chrono = "0.4.24"
-dotenv_codegen = "0.15.0"
-jsonwebtoken = "8.3.0"
+derive_more = "0.99.17"
+dotenvy_macro = "0.15.7"
 once_cell = "1.17.1"
 pwhash = "1.0.0"
+regex = "1.8.1"
 rustflake = "0.1.1"
-serde = "1.0.162"
-tokio = { version = "1.28.0", features = ["full"] }
+serde = { version = "1.0.162", features = ["derive"] }
+serde_json = "1.0.96"
 tokio-postgres = "0.7.8"

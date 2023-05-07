@@ -1,0 +1,35 @@
+{
+	// terminal config
+	"terminal.integrated.profiles.linux": {
+		"bash": null,
+		"tmux": null,
+		"JavaScript Debug Terminal": null,
+		"backend (zsh)": {
+			"path": "/bin/bash",
+			"args": ["-c", "cd backend && exec zsh"]
+		},
+		"frontend (zsh)": {
+			"path": "/bin/bash",
+			"args": ["-c", "cd frontend && exec zsh"]
+		}
+	},
+	"terminal.integrated.defaultProfile.linux": "zsh",
+
+	// ignored files
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/CVS": true,
+		"**/.DS_Store": true,
+		"**/Thumbs.db": true,
+		"**/pnpm-lock.yaml": true,
+		"**/Cargo.lock": true,
+		"**/node_modules": true,
+		"backend/target": true
+	},
+	
+	"rust-analyzer.linkedProjects": [
+		"backend/Cargo.toml"
+	]
+}

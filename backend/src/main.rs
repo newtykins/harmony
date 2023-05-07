@@ -1,58 +1,46 @@
+#![feature(result_option_inspect)]
+
 #[macro_use]
-extern crate dotenv_codegen;
+extern crate dotenvy_macro;
 
-use std::error::Error;
+mod auth;
 
-use async_graphql::{http::GraphiQLSource, EmptySubscription};
-use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
-use axum::{
-    response::{self, IntoResponse},
-    routing::{get, post},
-    Extension, Router, Server,
-};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder, error, http::header::ContentType};
+use auth::auth_service;
+use harmony::{ConnectionManager, Pool};
 use tokio_postgres::NoTls;
 
-mod models;
-use models::{Mutation, Query, Schema};
-
-async fn graphql_handler(schema: Extension<Schema>, req: GraphQLRequest) -> GraphQLResponse {
-    schema.execute(req.into_inner()).await.into()
+#[get("/")]
+async fn ping() -> impl Responder {
+    HttpResponse::Ok().json("pong")
 }
 
-async fn graphiql() -> impl IntoResponse {
-    response::Html(GraphiQLSource::build().endpoint("/").finish())
-}
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    // create the database pool
+    let manager = ConnectionManager::new_from_stringlike(dotenv!("DATABASE_URL"), NoTls).unwrap();
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    // connect to the database
-    let (client, connection) = tokio_postgres::connect(dotenv!("DB_URL"), NoTls)
+    let pool = Pool::builder()
+        .build(manager)
         .await
-        .unwrap();
+        .expect("could not build connection pool");
 
-    tokio::spawn(async move {
-        if let Err(e) = connection.await {
-            eprintln!("connection error: {}", e);
-        }
-    });
-
-    // make the schema
-    let schema = Schema::build(Query::default(), Mutation::default(), EmptySubscription)
-        .data(client)
-        .finish();
-
-    // start the server
-    let app = Router::new()
-        .route("/", post(graphql_handler))
-        .route("/graphiql", get(graphiql))
-        .layer(Extension(schema));
-
-    println!("GraphiQL: http://localhost:8000/graphiql");
-
-    Server::bind(&"127.0.0.1:8000".parse().unwrap())
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
-
-    Ok(())
+    // spawn the web server
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(pool.clone()))
+            // custom json extractor
+            .app_data(web::JsonConfig::default()
+            .error_handler(|err, _| {
+                // todo: better error handling, whatever that may entail
+                let msg = err.to_string();
+                error::InternalError::from_response(err, HttpResponse::Conflict().insert_header(ContentType::json())
+                .body(format!("{{\"message\":\"{}\"}}", msg))).into()
+            }))
+            .service(ping)
+            .service(web::scope("/api/v1").service(auth_service()))
+    })
+    .bind(("127.0.0.1", 8000))?
+    .run()
+    .await
 }

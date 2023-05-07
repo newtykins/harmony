@@ -1,2 +1,7 @@
 frontend
 .env
+node_modules
+dist
+old
+ts-backend
+target
