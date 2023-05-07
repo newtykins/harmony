@@ -4,6 +4,7 @@
 extern crate dotenvy_macro;
 
 mod auth;
+mod users;
 
 use actix_web::{
     error, get, http::header::ContentType, web, App, HttpResponse, HttpServer, Responder,
@@ -11,6 +12,7 @@ use actix_web::{
 use auth::auth_service;
 use harmony::{ConnectionManager, Pool};
 use tokio_postgres::NoTls;
+use users::users_service;
 
 #[get("/")]
 async fn ping() -> impl Responder {
@@ -44,7 +46,7 @@ async fn main() -> std::io::Result<()> {
                 .into()
             }))
             .service(ping)
-            .service(web::scope("/api/v1").service(auth_service()))
+            .service(web::scope("/api/v1").service(auth_service()).service(users_service()))
     })
     .bind(("127.0.0.1", 8000))?
     .run()
