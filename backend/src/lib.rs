@@ -1,5 +1,11 @@
-use actix_web::{error, HttpResponse, http::{header::ContentType, StatusCode}};
+use actix_web::{
+    error,
+    http::{header::ContentType, StatusCode},
+    HttpResponse,
+};
+use bb8_postgres::PostgresConnectionManager;
 use derive_more::{Display, Error};
+use tokio_postgres::NoTls;
 
 pub mod models;
 
@@ -10,11 +16,17 @@ pub type ConnectionManager = bb8_postgres::PostgresConnectionManager<tokio_postg
 
 pub type Pool = bb8::Pool<ConnectionManager>;
 
-#[derive(Debug, Display, Error)]
+pub async fn get_db<'t>(
+    pool: &'t Pool,
+) -> bb8::PooledConnection<'t, PostgresConnectionManager<NoTls>> {
+    pool.get()
+        .await
+        .expect("couldn't get db connection from pool")
+}
+
+#[derive(Debug, Display, Error, Clone)]
 pub enum Error {
-    BadClientData {
-        message: String
-    }
+    BadClientData { message: String },
 }
 
 impl error::ResponseError for Error {

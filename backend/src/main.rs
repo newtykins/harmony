@@ -1,11 +1,13 @@
-#![feature(result_option_inspect)]
+#![feature(const_trait_impl)]
 
 #[macro_use]
 extern crate dotenvy_macro;
 
 mod auth;
 
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder, error, http::header::ContentType};
+use actix_web::{
+    error, get, http::header::ContentType, web, App, HttpResponse, HttpServer, Responder,
+};
 use auth::auth_service;
 use harmony::{ConnectionManager, Pool};
 use tokio_postgres::NoTls;
@@ -30,12 +32,16 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(pool.clone()))
             // custom json extractor
-            .app_data(web::JsonConfig::default()
-            .error_handler(|err, _| {
+            .app_data(web::JsonConfig::default().error_handler(|err, _| {
                 // todo: better error handling, whatever that may entail
                 let msg = err.to_string();
-                error::InternalError::from_response(err, HttpResponse::Conflict().insert_header(ContentType::json())
-                .body(format!("{{\"message\":\"{}\"}}", msg))).into()
+                error::InternalError::from_response(
+                    err,
+                    HttpResponse::Conflict()
+                        .insert_header(ContentType::json())
+                        .body(format!("{{\"message\":\"{}\"}}", msg)),
+                )
+                .into()
             }))
             .service(ping)
             .service(web::scope("/api/v1").service(auth_service()))
